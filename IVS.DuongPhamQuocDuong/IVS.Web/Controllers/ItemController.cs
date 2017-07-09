@@ -44,9 +44,9 @@ namespace IVS.Web.Controllers
         [ValidateInput(false)]
         public ActionResult Index(int? page, ItemSearchModel Model)
         {
-            
-            Model.searchResultModel = new List<ItemViewModel>();
-            Model.searchResultModel = _itemBL.Search(Model,page);
+
+            List<ItemViewModel> list = new List<ItemViewModel>();
+            list = _itemBL.Search(Model, page);
             if (page.HasValue && Session[ScreenController] != null)
             {
                 Model = (ItemSearchModel)Session[ScreenController];
@@ -55,14 +55,15 @@ namespace IVS.Web.Controllers
             {
                 Session[ScreenController] = Model;
             }
+
             int Count = _itemBL.Count(Model);
             TempData["SearchCount"] = Count + " row(s)";
             var pageNumber = (page ?? 1);
             ViewBag.No = (pageNumber - 1) * 200;
-            var list = new StaticPagedList<ItemViewModel>(Model.searchResultModel, pageNumber, 200, Count);
+            Model.searchResultModel = new StaticPagedList<ItemViewModel>(list, pageNumber, 200, Count);
             ViewBag.Parent = new SelectList(_itemBL.GetListCategory(true), "id", "name");
             ViewBag.CurrentFilter = Model;
-            return PartialView("ListItem", list);
+            return PartialView("ListItem", Model.searchResultModel);
         }
         #region ADD
         public ActionResult Add()
